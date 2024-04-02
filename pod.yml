@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+   name: website
+spec:
+   containers:
+   - name: website
+     image: public.ecr.aws/n8y8c3i1/argocdtest:latest 
+     ports:
+     - containerPort: 80
