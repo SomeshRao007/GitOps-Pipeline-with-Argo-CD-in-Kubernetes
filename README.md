@@ -161,7 +161,7 @@ echo <password> | base64 --decode #to decode the password
 ~~~
 
 Sign up into argocd by entering ipaddress given by minikube tunnel & you willsee a login page 
-##### vollaaa!!
+#### vollaaa!!
 
 Lastly, installation of Argo Rollouts
 Again, we install the Argo Rollouts controller in your Kubernetes cluster, by following the official guide. but i will share the commands i used. 
@@ -554,7 +554,7 @@ Quick Breakdown
 
 ** To set up ArgoCD **
 
-Go to the brower page where you open [GO](#heading-5 "Argocd UI")
+Go to the brower page where you open [GO](####vollaaa!! "Argocd UI")
 
 
 
