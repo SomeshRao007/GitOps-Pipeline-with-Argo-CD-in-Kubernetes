@@ -476,7 +476,7 @@ deployment.apps/website-deployment created
 
 To check deploymnt, replica sets and pods:
 
-~~~~
+~~~
 kubectl get deploy
 ~~~
 
