@@ -465,3 +465,96 @@ Quick breakdown
 
 **spec.template.metadata.labels:** Very similar to metadata.labels. The only difference is that those labels are added to the deployment while these ones are added to the pods.
 - - - -
+
+To deploy the menifest file we created:
+
+~~~
+kubectl apply -f deployment.yml
+
+deployment.apps/website-deployment created
+~~~
+
+To check deploymnt, replica sets and pods:
+
+~~~~
+kubectl get deploy
+~~~
+
+~~~
+NAME                 READY   UP-TO-DATE   AVAILABLE   AGE
+website-deployment   3/3     3            3           75s
+~~~
+
+~~~
+kubectl get rs
+~~~
+
+~~~
+NAME                            DESIRED   CURRENT   READY   AGE
+website-deployment-84c497887b   3         3         3       86s
+~~~
+
+~~~
+kubectl get pods 
+~~~
+
+~~~
+NAME                                  READY   STATUS    RESTARTS   AGE
+website-deployment-84c497887b-b8xzp   1/1     Running   0          97s
+website-deployment-84c497887b-dlsbd   1/1     Running   0          97s
+website-deployment-84c497887b-rnv4s   1/1     Running   0          97s
+~~~
+
+> If you notice, our replical set is set 3, Hence the number of pods. The number of replica set is actually decided by number of concrete users accessing the following application. So it is an Important decision that a DevOps engineer takes is to take adequate number of replica count. That means if you delete any pod or due to some disaster, a pod got delted then it will regenerate to desire count (similar to ASG in AWS).
+
+
+To get more info or detailed info of our pods, clusters etc etc access the dashboard :
+
+~~~
+ minikube dashboard
+~~~
+
+
+Now lets create services 
+
+Its all about how to interact with the pods, We use services to expose an application running in a set of pods to the world outside the cluster.
+
+~~~
+vim service.yml 
+~~~
+
+~~~
+apiVersion: v1
+kind: Service
+metadata:
+  name: website-service
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: website
+  ports:
+    - name: "http"
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 30080
+~~~
+
+Quick Breakdown
+- - - -
+**spec.ports.port:** The port that will be exposed by the service.
+**spec.ports.targetPort:** The port that the service will target in the container.
+**spec.ports.nodePort:** The port that the service will expose in all the nodes of the cluster
+- - - -
+
+> Note
+>> The port field, the website service is available at node port 30080 now, you can access the web page at http://<node IP address>:30080.
+
+**
+To set up ArgoCD 
+**
+
+
+
+
+
