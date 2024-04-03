@@ -228,7 +228,8 @@ To check image
 docker images
 ~~~
 
-> Docker internally runs on a client/server architecture. In particular, when you run docker build, it creates a tar file of the directory you specify, sends that tar file across a socket to the Docker daemon, and unpacks it there. (True even on a totally local system.)
+> Note:
+> > Docker internally runs on a client/server architecture. In particular, when you run docker build, it creates a tar file of the directory you specify, sends that tar file across a socket to the Docker daemon, and unpacks it there. (True even on a totally local system.)
 
 ~~~
 docker run -itd -port 3000:80 --name website myweb
@@ -278,6 +279,9 @@ d91409980a4e: Pushed
 a483da8ab3e9: Pushed 
 latest: digest: sha256:98ba59f775811691803162b8d95418530e81623f3fb88144c891b9ea794a7adc size: 1784
 ```
+
+![Screenshot 2024-04-02 191700](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/d647caae-6897-428c-90d2-30819ccdadcf)
+
 
 ### create a kubernetes deployment resource
 
@@ -331,7 +335,6 @@ kubectl describe pod/website
 
 Output:
 - - - -
-
 ~~~
 Name:             website
 Namespace:        default
@@ -388,7 +391,7 @@ Events:
   Normal  Started    107s   kubelet            Started container website
 ~~~
 
-Now u cannot access this my website indirectly, as our pods are handled by minikube. Minikube create a vm at the beginneing so, to access our website for now go inside minikube for that simply type:
+Now you cannot access this my website directly, as our pods are handled by minikube. Minikube create a vm at the beginneing so, to access our website for now go inside minikube for that simply type:
 
 ~~~
 minikubve ssh 
@@ -404,15 +407,61 @@ Since we are doing curl we will get underlying HTML page i dont want to show tha
 
 __vollaaa!!__
 
-> Note
+> Note:
 > > if u delete the pod youcannot access to my webite (TRY ON UROWN)
 
 
 ## Deploy the Application Using Argo CD
-now lets create deployment.yml file 
 
+we will create a Kubernetes manifests(deployment and service files) in our repository to use the Docker image we pushed eariler.
+After that, we will set up Argo CD to monitor our repository and automatically deploy changes to your Kubernetes cluster.
 
+Enough chit chat!! 
+now, lets create deployment.yml file 
 
+~~~
+vim deployment.yaml
+~~~
 
+~~~
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-deployment
+  labels:
+    app: website
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: website
+        image: public.ecr.aws/n8y8c3i1/argocdtest:latest
+        ports:
+        - containerPort: 80
+~~~
 
+Quick breakdown
+- - - -
+**apiVersion:** Under the hood, a Kubernetes cluster exposes its functionality via a REST API. We seldom interact with this API directly because we have kubectl that takes care of it for us. 
 
+**kind:** It represents the type of object that the configuration file defines. 
+
+**metadata.name:** Quite simply, the name of the object. It’s how we and Kubernetes refer to it.
+
+**metadata.labels:** These help us further categorize cluster objects. These have no real effect in the system
+
+**spec:** This contains the actual functional specification for the behavior of the deployment.
+
+**spec.replicas:** The number of replica pods that the deployment should create.
+
+**spec.template:** Specifies the configuration of the pods that will be part of the deployment
+
+**spec.template.metadata.labels:** Very similar to metadata.labels. The only difference is that those labels are added to the deployment while these ones are added to the pods.
+- - - -
