@@ -1,10 +1,10 @@
 # GitOps-Pipeline-with-Argo-CD-in-Kubernetes
 
 ## Overview
-we will dockerize a simple web application, deploy it to a Kubernetes cluster using Argo CD, and manage its release process with Argo Rollouts. This is divided into four main tasks: 
-1) setup and configuration.
-2) creating the GitOps pipeline.
-3) implementing a canary release.
+We will dockerize a simple web application, deploy it to a Kubernetes cluster using Argo CD, and manage its release process with Argo Rollouts. This is divided into four main tasks: 
+1) Setup and configuration.
+2) Creating the GitOps pipeline.
+3) Implementing a canary release.
 4) Clean up & documentation.
 
 ## Task 1: Setup and Configuration
@@ -42,7 +42,7 @@ kubelet: Running
 apiserver: Running
 kubeconfig: Configured
 ```
-I wanted to check is there any pods running for that
+Let's check is there any other pods running 
 
 ```
 kubectl get pods -A
@@ -90,7 +90,7 @@ argocd        argocd-server-5c797497fb-xklvq                      1/1     Runnin
 
 ![Screenshot 2024-04-02 152145](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/59723569-107d-4da7-8a28-70fa3b77e69f)
 
-If you are running a VMware Virtual machine then please wait it will take time as per allocated resources.
+If you are running a VMware Virtual machine then please wait, it will take time as per allocated resources.
 If you see all these pods up and running then you are good to go. 
 
 Lets check services:
@@ -160,7 +160,7 @@ The password you copied is an encrypted password we will decrypt it with:
 echo <password> | base64 --decode #to decode the password
 ~~~
 
-Sign up into argocd by entering ipaddress given by minikube tunnel & you willsee a login page 
+Sign up into argocd by entering ipaddress given by minikube tunnel & you will see a login page 
 #### vollaaa!!
 
 Lastly, installation of Argo Rollouts
@@ -170,7 +170,7 @@ Again, we install the Argo Rollouts controller in your Kubernetes cluster, by fo
 kubectl create namespace argo-rollouts
 kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ~~~
-this will work.
+this should work.
 
 And for kubectl plugins:
 basically we are downloading that scrip file __curl__, then making it executable file with __chmod +x__ and we are running that file with __./__ and moving the output to /usr/local/bin/kubectl-argo-rollouts location.
@@ -184,6 +184,7 @@ sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
 installation is complete. 
 
 ## Task 2: Creating the GitOps Pipeline
+
 ## Dockerize the Application
 we will build a Docker image for our web application and push it to a _**public container registry**_ of your choice.
 
@@ -408,7 +409,7 @@ Since we are doing curl we will get underlying HTML page i dont want to show tha
 __vollaaa!!__
 
 > Note:
-> > if u delete the pod youcannot access to my webite (TRY ON UROWN)
+> > If u delete the pod youcannot access to my webite (TRY ON YOUR OWN)
 
 
 ## Deploy the Application Using Argo CD
@@ -592,7 +593,7 @@ Now, if you want to test, where it actually works or not go to the mentioned git
 __Let's get into the work!!__
 
 
-By this stage, we hava already installed Algo rollouts in our kubernetes cluster. we will proceed with manifest files.
+By this stage, we have already installed Algo rollouts in our kubernetes cluster. We will proceed with manifest files.
 
 
 > Note:
@@ -690,16 +691,18 @@ kubectl apply -f deployment_rollout.yaml
 kubectl apply -f service_rollout.yaml
 ~~~
 
-As soon as you apply these configarations it will start creating pods (if you changed replical count) to check that 
+As soon as you apply these configurations it will start creating pods (if you change the replical count)
+
+To check that:
 
 ~~~
 kubectl get pods -A
 ~~~
 
 
-### Now lets check dashboard to monitor deployment !!!!
+### Now let's check dashboard to monitor deployment !!!!
 
-**for web-based dashboard :**
+**For web-based dashboard :**
 
 ~~~
 kubectl argo rollouts dashboard
@@ -733,9 +736,9 @@ For me name was _website-rollout_ as defined in deployment file
 ### volla!
 
 
-Now let's make some changes in docker image.
+Now let's make some changes in the docker image.
 
-I will make changes in website landing page and update that image with a new tag in ECR. 
+I will make changes in the website landing page and update the image with a "**new**" tag in ECR. 
 
 
 **Pushing code ECR**
@@ -773,7 +776,7 @@ or change the wedsite field in top right corner, below the namespace the dashbao
 
 ![Screenshot 2024-04-03 115223](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/3a08b795-ad7c-40a6-ae96-5a9b0fc57bc4)
 
-Check image tag **new** in containers>wesite. it shows from where it is pulling the image.
+Check image tag **new** under containers check wesite. It shows from where the image is being pulled.
 
 
 As you can see, after 2 pods the deployment stopped as I have configured. It will continue the deployment once I promote it (give access to continue)
@@ -785,7 +788,7 @@ Select **YES**
 
 
 
-Within no time revision 2 pops out (application was pretty small thatsy it was quick. It was so fast that, by the time i type command to watch deployment our revision was rolled out)
+Within no time revision 2 pops out (application was pretty small that's why it was quick. It was so fast that, by the time I type command to watch deployment our revision 2 was rolled out)
 
 ![Screenshot 2024-04-03 115431](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/dfef2a55-3b0e-4bb5-9ec3-818627ca5d03)
 
@@ -817,7 +820,7 @@ Then you can delete by selecting delete option in the interface and select casca
 
 **or**
 
-You can use this command fo me Name was _website-argocd_
+You can use this command for me the Name was _website-argocd_
 
 ~~~
 kubectl delete ApplicationSet <NAME> --cascade
