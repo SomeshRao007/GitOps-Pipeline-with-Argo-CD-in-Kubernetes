@@ -553,10 +553,10 @@ Quick Breakdown
 >> The port field, the website service is available at node port 30080 now, you can access the web page at http://<node IP address>:30080.
 
 
-** To set up ArgoCD **
 
+__To set up ArgoCD__ 
 
-Go to the brower page where you open [GO](#vollaaa!! "Argocd UI")
+Go to the brower page where you open [Agrocd UI](####vollaaa!! "Argocd UI")
 
 
 
