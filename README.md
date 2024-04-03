@@ -267,7 +267,7 @@ docker push public.ecr.aws/n8y8c3i1/argocdtest:latest
 
 After a sucessfull push u will see this: 
 
-`
+```
 The push refers to repository [public.ecr.aws/n8y8c3i1/argocdtest]
 ac324cd774ab: Pushed 
 d91409980a4e: Pushed 
@@ -277,7 +277,134 @@ d91409980a4e: Pushed
 3ee8143dd880: Pushed 
 a483da8ab3e9: Pushed 
 latest: digest: sha256:98ba59f775811691803162b8d95418530e81623f3fb88144c891b9ea794a7adc size: 1784
-`
+```
+
+### create a kubernetes deployment resource
+
+It is best practice to create a namespace to work and test... why ?
+
+Imagine a Kubernetes cluster with hundreds or even thousands of applications running inside Pods. Each of these Pods has its own set of Kubernetes objects, such as Deployments, Services, ConfigMaps, Secrets, and more. When all these resources are deployed in the same Namespace, it can be difficult to know which resource belongs to which application. there is a high risk of accidentally updating the wrong resource and breaking a running application.Namespaces provide a solution to this problem. By grouping resources into logically isolated groups, Namespaces help reduce the chance of making mistakes when managing resources.
+
+To create a namespace to test and work env:
+
+~~~
+kubectl create namespace testenv
+~~~
+
+Let's create a pod first and understand the basics 
+
+~~~
+vim pod.yaml
+~~~
+
+write this to create a pod that takes image from our ECR repositry 
+
+~~~
+apiVersion: v1
+kind: Pod
+metadata:
+   name: website
+spec:
+   containers:
+   - name: website
+     image: public.ecr.aws/n8y8c3i1/argocdtest:latest
+     ports:
+     - containerPort: 80
+~~~
+
+inorder to create this pod and keep it up running we do:
+
+~~~
+kubectl apply -f pod.yaml
+~~~
+
+check the pod by:
+
+~~~
+kubectl get pods -n <namespace>
+~~~
+
+To get complete Info about the pod:
+pod/<name>
+~~~
+kubectl describe pod/website
+~~~
+
+<details>
+           <summary>Output of Describe</summary>
+<p>
+Name:             website
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Tue, 02 Apr 2024 21:37:33 +0700
+Labels:           <none>
+Annotations:      cni.projectcalico.org/containerID: 80219f618b64694e7da455ce1553c9bffe53a5293c6694f1dd6d25aaf75675fa
+                  cni.projectcalico.org/podIP: 10.244.120.126/32
+                  cni.projectcalico.org/podIPs: 10.244.120.126/32
+Status:           Running
+IP:               10.244.120.126
+IPs:
+  IP:  10.244.120.126
+Containers:
+  website:
+    Container ID:   docker://0b4aa8ea49c0e3ca994c0cff107ba86c1a55907dfa5e66382a91fb5ff9dc7226
+    Image:          public.ecr.aws/n8y8c3i1/argocdtest:latest
+    Image ID:       docker-pullable://public.ecr.aws/n8y8c3i1/argocdtest@sha256:98ba59f775811691803162b8d95418530e81623f3fb88144c891b9ea794a7adc
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 02 Apr 2024 21:38:43 +0700
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-qhcw7 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-qhcw7:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  2m56s  default-scheduler  Successfully assigned default/website to minikube
+  Normal  Pulling    2m54s  kubelet            Pulling image "public.ecr.aws/n8y8c3i1/argocdtest:latest"
+  Normal  Pulled     107s   kubelet            Successfully pulled image "public.ecr.aws/n8y8c3i1/argocdtest:latest" in 1m7.082979603s 
+  Normal  Created    107s   kubelet            Created container website
+  Normal  Started    107s   kubelet            Started container website
+
+</p>
+</details>
+           
+
+
+now u cannot access this my website directly our pods are handled by minikube its basically running is a vm created minikube at the beginneing so 
+
+simply type 
+
+minikubve ssh 
+
+u will get this that system and curl followed by IP address as mentioned above discribe commanad 
+
+curl 10.244.120.126
+
+vollaaa!!
+
+
 
 
 
