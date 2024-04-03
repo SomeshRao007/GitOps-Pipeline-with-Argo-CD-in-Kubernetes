@@ -161,7 +161,7 @@ echo <password> | base64 --decode #to decode the password
 ~~~
 
 Sign up into argocd by entering ipaddress given by minikube tunnel & you willsee a login page 
-__vollaaa!!__
+##### vollaaa!!
 
 Lastly, installation of Argo Rollouts
 Again, we install the Argo Rollouts controller in your Kubernetes cluster, by following the official guide. but i will share the commands i used. 
@@ -543,17 +543,18 @@ spec:
 Quick Breakdown
 - - - -
 **spec.ports.port:** The port that will be exposed by the service.
+
 **spec.ports.targetPort:** The port that the service will target in the container.
+
 **spec.ports.nodePort:** The port that the service will expose in all the nodes of the cluster
 - - - -
 
 > Note
 >> The port field, the website service is available at node port 30080 now, you can access the web page at http://<node IP address>:30080.
 
-**
-To set up ArgoCD 
-**
+** To set up ArgoCD **
 
+Go to the brower page where you open [GO](#heading-5 "Argocd UI")
 
 
 
