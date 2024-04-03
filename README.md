@@ -243,6 +243,41 @@ to check go to 127.0.0.1/3000 (or type localhost:3000)
 __vollaa!!__
 
 
+Now, lets push this into our registry, I am using AWS ECR as i am comfortable with AWS services SignIn into the AWS console and naviagte to ECR (Elastic contriner registry) in search box. I am creating a a public registry and if you want enhanced security enable encryption but, i am leaving it disabled.
+
+if you go to the registry and click on push commands it will give you commands follow that: 
+
+To retrieve an authentication token and authenticate your Docker client to your registry.
+
+```
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n8y8c3i1
+```
+
+After the build completes, tag your image so you can push the image to this repository:
+
+~~~~
+docker tag argocdtest:latest public.ecr.aws/n8y8c3i1/argocdtest:latest
+~~~~
+
+Run the following command to push this image to your newly created AWS repository
+
+~~~
+docker push public.ecr.aws/n8y8c3i1/argocdtest:latest
+~~~
+
+After a sucessfull push u will see this: 
+
+`
+The push refers to repository [public.ecr.aws/n8y8c3i1/argocdtest]
+ac324cd774ab: Pushed 
+d91409980a4e: Pushed 
+2ef15bc08e25: Pushed 
+1f9ac7ca16f1: Pushed 
+5f70bf18a086: Pushed 
+3ee8143dd880: Pushed 
+a483da8ab3e9: Pushed 
+latest: digest: sha256:98ba59f775811691803162b8d95418530e81623f3fb88144c891b9ea794a7adc size: 1784
+`
 
 
 
