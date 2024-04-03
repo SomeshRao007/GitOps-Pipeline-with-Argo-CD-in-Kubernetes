@@ -281,9 +281,8 @@ latest: digest: sha256:98ba59f775811691803162b8d95418530e81623f3fb88144c891b9ea7
 
 ### create a kubernetes deployment resource
 
-It is best practice to create a namespace to work and test... why ?
-
-Imagine a Kubernetes cluster with hundreds or even thousands of applications running inside Pods. Each of these Pods has its own set of Kubernetes objects, such as Deployments, Services, ConfigMaps, Secrets, and more. When all these resources are deployed in the same Namespace, it can be difficult to know which resource belongs to which application. there is a high risk of accidentally updating the wrong resource and breaking a running application.Namespaces provide a solution to this problem. By grouping resources into logically isolated groups, Namespaces help reduce the chance of making mistakes when managing resources.
+> It is best practice to create a namespace to work and test... why ?
+>> Imagine a Kubernetes cluster with hundreds or even thousands of applications running inside Pods. Each of these Pods has its own set of Kubernetes objects, such as Deployments, Services, ConfigMaps, Secrets, and more. When all these resources are deployed in the same Namespace, it can be difficult to know which resource belongs to which application. there is a high risk of accidentally updating the wrong resource and breaking a running application.Namespaces provide a solution to this problem. By grouping resources into logically isolated groups, Namespaces help reduce the chance of making mistakes when managing resources.
 
 To create a namespace to test and work env:
 
@@ -330,9 +329,9 @@ pod/<name>
 kubectl describe pod/website
 ~~~
 
-<details>
-           <summary>Output of Describe</summary>
-<p>
+Output:
+- - - -
+
 ~~~
 Name:             website
 Namespace:        default
@@ -388,22 +387,29 @@ Events:
   Normal  Created    107s   kubelet            Created container website
   Normal  Started    107s   kubelet            Started container website
 ~~~
-</p>
-</details>
-           
 
+Now u cannot access this my website indirectly, as our pods are handled by minikube. Minikube create a vm at the beginneing so, to access our website for now go inside minikube for that simply type:
 
-now u cannot access this my website directly our pods are handled by minikube its basically running is a vm created minikube at the beginneing so 
-
-simply type 
-
+~~~
 minikubve ssh 
+~~~
 
-u will get this that system and curl followed by IP address as mentioned above discribe commanad 
+After SSH into to the minikube, reach our website which is on IP mentioned in above describe part.
 
+~~~
 curl 10.244.120.126
+~~~
 
-vollaaa!!
+Since we are doing curl we will get underlying HTML page i dont want to show that but i can gurantee that if you follow the steps it will work!!
+
+__vollaaa!!__
+
+> Note
+> > if u delete the pod youcannot access to my webite (TRY ON UROWN)
+
+
+## Deploy the Application Using Argo CD
+now lets create deployment.yml file 
 
 
 
