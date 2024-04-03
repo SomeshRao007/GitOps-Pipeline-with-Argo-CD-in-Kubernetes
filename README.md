@@ -556,7 +556,7 @@ Quick Breakdown
 
 __To set up ArgoCD__ 
 
-Go to the brower page where you open your Argocd UI. 
+Go to the brower page where you open your Argocd UI. [Here](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/tree/master?tab=readme-ov-file#vollaaa) 
 - Click on create new application.
 - Provide your Github repository and mention path (the foleder name in which you kept youe menifest files).
 - Select sync menthod i.e Manual or Automatic. If selected manual, Argocd required human intervention to accept and refect every time, when is change in your code files.
