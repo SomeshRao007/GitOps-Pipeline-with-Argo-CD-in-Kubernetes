@@ -63,11 +63,60 @@ kube-system   kube-scheduler-minikube                    1/1     Running   0    
 kube-system   storage-provisioner                        1/1     Running   1 (36s ago)   76s
 ~~~
 
- 
+Secondly, we have Install Argo CD on Your Kubernetes Cluster
+We can follow the official Argo CD documentation to install and set up Argo CD. But I will list all the command for you:
+
+To Install: 
+~~~
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+~~~
+
+To confirm the installation check for the running pods :
+
+~~~
+kubectl get pods -A
+~~~
+~~~
+NAMESPACE     NAME                                                READY   STATUS    RESTARTS       AGE
+argocd        argocd-application-controller-0                     1/1     Running   0              51s
+argocd        argocd-applicationset-controller-75b78554fd-55r6b   1/1     Running   0              52s
+argocd        argocd-dex-server-869fff9967-k5mlz                  1/1     Running   0              52s
+argocd        argocd-notifications-controller-5b8dbb7c86-rldkm    1/1     Running   0              52s
+argocd        argocd-redis-66d9777b78-smc4h                       1/1     Running   0              52s
+argocd        argocd-repo-server-7b8d97c767-96rzh                 1/1     Running   0              52s
+argocd        argocd-server-5c797497fb-xklvq                      1/1     Running   0              51s
+~~~
+If you see all these pods up and running then you are good to go. 
+
+Lets check services:
+for default namespace
+~~~
+kubectl get svc 
+~~~
+
+for a specific namespace use -n tag:
+
+~~~
+kubectl get svc -n argocd
+~~~
+Output:
+
+~~~
+NAME                                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+argocd-applicationset-controller          ClusterIP   10.97.219.135   <none>        7000/TCP,8080/TCP            2m7s
+argocd-dex-server                         ClusterIP   10.106.76.191   <none>        5556/TCP,5557/TCP,5558/TCP   2m7s
+argocd-metrics                            ClusterIP   10.111.161.2    <none>        8082/TCP                     2m7s
+argocd-notifications-controller-metrics   ClusterIP   10.103.253.61   <none>        9001/TCP                     2m7s
+argocd-redis                              ClusterIP   10.111.1.230    <none>        6379/TCP                     2m7s
+argocd-repo-server                        ClusterIP   10.111.241.53   <none>        8081/TCP,8084/TCP            2m7s
+argocd-server                             ClusterIP   10.100.12.23    <none>        80/TCP,443/TCP               2m7s
+argocd-server-metrics                     ClusterIP   10.97.68.20     <none>        8083/TCP                     2m7s
+~~~
 
 
 
-- Install Argo CD on Your Kubernetes Cluster: Follow the official Argo CD documentation to install and set up Argo CD.
+
 - Install Argo Rollouts: Install the Argo Rollouts controller in your Kubernetes cluster, following the official guide.
 
 
