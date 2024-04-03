@@ -13,7 +13,7 @@ we will dockerize a simple web application, deploy it to a Kubernetes cluster us
 3. Install Argo Rollouts: Install the Argo Rollouts controller in your Kubernetes cluster, following the official guide.
 
 
-
+Create a Github repository and host  
 
 
 
