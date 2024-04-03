@@ -8,6 +8,7 @@ we will dockerize a simple web application, deploy it to a Kubernetes cluster us
 4) Clean up & documentation.
 
 ## Task 1: Setup and Configuration
+
 Firstly, Create a Github repository and host your source code in the same repository.
 Now log into your Linux system and install minikube, check for the installation script in my repositry https://github.com/SomeshRao007/Autoscalling_minikube_helm.git for installation script one and two, clone it then run:
 
@@ -138,7 +139,7 @@ Or as an alternative you can do port forwarding
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
-To Feach username and password for Admin (as we are😅) follow the steps below:
+To Fetch username and password for Admin (as we are😅) follow the steps below:
 all confidentails data is stored in secret servers
 
 ~~~
@@ -182,8 +183,12 @@ sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
 
 installation is complete. 
 
+## Task 2: Creating the GitOps Pipeline
+## Dockerize the Application
+we will build a Docker image for our web application and push it to a _**public container registry**_ of your choice.
 
-## Creating Docker Image 
+
+### Creating Docker Image 
 
 For docker image, i am using my porfolio website so starting with cloning my git repo u can use you can use your own website: 
 
@@ -225,13 +230,19 @@ docker images
 
 > Docker internally runs on a client/server architecture. In particular, when you run docker build, it creates a tar file of the directory you specify, sends that tar file across a socket to the Docker daemon, and unpacks it there. (True even on a totally local system.)
 
-
+~~~
 docker run -itd -port 3000:80 --name website myweb
+~~~
 
-# basically we are running docker in background (-itd tag) on port 3000 (container port : host port) and name of the container website from the image myweb.
+We are running docker in background __-itd tag__ on port 3000 (__container port : host port__) and name of the container website from the image _myweb_.
+
+to check go to 127.0.0.1/3000 (or type localhost:3000) 
+
+![Screenshot 2024-04-02 191017](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/4992705b-a474-4ace-b96b-85882d52e2a8)
+
+__vollaa!!__
 
 
-to check 127.0.0.1/3000 (or type localhost:3000) vollaa!!
 
 
 
