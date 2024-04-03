@@ -556,7 +556,366 @@ Quick Breakdown
 
 __To set up ArgoCD__ 
 
-Go to the brower page where you open [Agrocd UI](####vollaaa!! "Argocd UI")
+Go to the brower page where you open your Argocd UI. 
+- Click on create new application.
+- Provide your Github repository and mention path (the foleder name in which you kept youe menifest files).
+- Select sync menthod i.e Manual or Automatic. If selected manual, Argocd required human intervention to accept and refect every time, when is change in your code files.
+- Then you see some extra features such as create namespace etc. select as per your needs.
+- Finaly click on create.
+
+
+After 2-10 mins (depending on application), if you check your deployments and pods you will see the magic!
+
+
+![Screenshot 2024-04-02 224737](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/3cdedad0-c7eb-46dd-91c4-88b9591e1cd8)
+
+
+![Screenshot 2024-04-02 224749](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/cbb53e4f-42b3-4ff6-9f22-d66e06682f8f)
+
+
+Now, if you want to test, where it actually works or not go to the mentioned github repo and edit the deployemnt file (in reality we will push the files, just for ease i am demonistating this method) and change the replica set from 5 to 1. as soon as you make a commit it will start working and magic works !!
+
+![Screenshot 2024-04-02 225027](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/9484faf1-4b9f-49f8-bc7c-a53ce58a5343)
+
+
+
+## Task 3: Implementing a Canary Release with Argo Rollouts
+
+1. In this we will define a Rollout Strategy, we will Modify the application's deployment to use Argo Rollouts, specifying a __Canary release strategy__ in the rollout definition.
+2. Then we will trigger a Rollout by:
+- make a change to the application
+- Update the Docker image
+- Pushing the new version to your registry
+- Update the rollout definition to use this new image.
+3. We will also monitor the Rollout by using Argo Rollouts to monitor the deployment of the new version, ensuring the canary release successfully completes.
+
+__Let's get into the work!!__
+
+
+By this stage, we hava already installed Algo rollouts in our kubernetes cluster. we will proceed with manifest files.
+
+
+> Note:
+> > I faced a problem with cli authentication with this github repo, I have used Gitlab for pushing code and actively make changes overthere. In this repo you will find 2 different folders, one for argocd and one for rollout this is to maintain the code and demonstation purpose only!! In actuality, I have changed previous deployment.yaml and service.yaml files otherwise you cant see the proper connection between Argocd and Argo rollouts in your application. 
+
+
+Creating a seperate folder and our manifest files
+
+~~~
+mkdir website_rollout
+
+vim deployment_rollout.yaml
+~~~
+
+write this in deployment file:
+
+~~~
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: website-rollout
+spec:
+  replicas: 10
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: website
+        image: public.ecr.aws/n8y8c3i1/argocdtest:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+~~~
+
+_A new resources section has been added under the container spec, which is optional but recommended for resource requests and limits._
+
+With this Rollout configuration, Argo Rollouts will gradually increase the weight of the new version of your application during the canary deployment, following the specified steps. 
+
+
+Also, if u notice we have to change API version from **apps/v1** to **argoproj.io/v1alpha1** because Argo Rollouts is a separate Custom Resource Definition (CRD) introduced by the Argo Rollouts project, and it _is not part of the core Kubernetes API_.
+
+The _apps/v1 apiVersion is used for standard Kubernetes Deployment resources_, which are part of the core Kubernetes API. The _argoproj.io/v1alpha1 apiVersion corresponds to the Argo Rollouts CRD_, which provides additional features and capabilities for managing deployment strategies like canary deployments, blue-green deployments etc.
+
+> Note:
+>> If you try to use the apps/v1 apiVersion with the kind: Rollout, Kubernetes will not recognize the Rollout resource, as it is not a part of the core Kubernetes API. Therefore, to use the Argo Rollouts features, _you must specify the correct apiVersion (argoproj.io/v1alpha1) and kind (Rollout) in your YAML file_. As kind field specifies the type of resource you are defining, and it must match the corresponding CustomResourceDefinition(CRD).
+
+
+### About strategy used
+
+The strategy used here is a canary deployment strategy, which is a technique for gradually rolling out a new version of an application alongside the existing version. In a canary deployment, a small portion of the traffic (20% in our case) is initially directed to the new version of the application (the **canary version**). This allows you to monitor the performance and behavior of the new version in a production environment with a reduced risk. If the canary version performs well, the traffic is gradually increased in steps (as we increased 40%, 60%, 80%) until the new version receives all the traffic. At each step, there's a pause duration to allow for monitoring and potential rollback if any issues are detected. 
+
+
+~~~
+vi service_rollout.YAML
+~~~
+
+~~~
+apiVersion: v1
+kind: Service
+metadata:
+  name: website
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: website
+~~~
+
+
+Apply these configaration:
+
+~~~
+kubectl apply -f deployment_rollout.yaml
+kubectl apply -f service_rollout.yaml
+~~~
+
+As soon as you apply these configarations it will start creating pods (if you changed replical count) to check that 
+
+~~~
+kubectl get pods -A
+~~~
+
+
+### Now lets check dashboard to monitor deployment !!!!
+
+**for web-based dashboard :**
+
+~~~
+kubectl argo rollouts dashboard
+~~~
+
+Output:
+INFO[0000] Argo Rollouts Dashboard is now available at http://localhost:3100/rollouts 
+
+**for CLI :**
+
+~~~
+kubectl argo rollouts get rollout <rollout_name>
+~~~
+
+For me name was _website-rollout_ as defined in deployment file
+
+
+
+![Screenshot 2024-04-03 101713](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/2ea2d6e6-bbc6-4410-8c94-cced7c763d88)
+
+
+
+![Screenshot 2024-04-03 102047](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/1c4ac1ac-f6df-48cd-9dc4-eef05bdc056e)
+
+
+### Revision 1
+
+![Screenshot 2024-04-03 102114](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/597ffaf6-43fe-4683-b0b3-466617962615)
+
+
+### volla!
+
+
+Now let's make some changes in docker image.
+
+I will make changes in website landing page and update that image with a new tag in ECR. 
+
+
+**Pushing code ECR**
+
+~~~
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/n8y8c3i1
+
+docker build -t argotestrollout .
+
+docker tag argotestrollout:latest public.ecr.aws/n8y8c3i1/argocdtest:new
+
+docker push public.ecr.aws/n8y8c3i1/argocdtest:new
+~~~
+
+**New Image cli**
+
+![Screenshot 2024-04-03 104726](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/0d9bcf73-2d56-4c81-b0bd-a32869f10a5e)
+
+
+**ECR**
+
+![Screenshot 2024-04-03 121757](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/11cd4ce4-ae24-4817-9a98-6cc8ad1c435a)
+
+
+
+You can use this command to change the image in of the deployment 
+
+~~~
+kubectl argo rollouts set image rollout/website-rollout website=public.ecr.aws/n8y8c3i1/argocdtest:new
+~~~
+
+or change the wedsite field in top right corner, below the namespace the dashbaord.
+
+
+
+![Screenshot 2024-04-03 115223](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/3a08b795-ad7c-40a6-ae96-5a9b0fc57bc4)
+
+Check image tag **new** in containers>wesite. it shows from where it is pulling the image.
+
+
+As you can see, after 2 pods the deployment stopped as I have configured. It will continue the deployment once I promote it (give access to continue)
+
+Select **YES**
+
+
+![Screenshot 2024-04-03 115236](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/ddfbe0ae-597b-4528-a5b4-6f7a0a41223e)
+
+
+
+Within no time revision 2 pops out (application was pretty small thatsy it was quick. It was so fast that, by the time i type command to watch deployment our revision was rolled out)
+
+![Screenshot 2024-04-03 115431](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/dfef2a55-3b0e-4bb5-9ec3-818627ca5d03)
+
+### Revision 2
+
+![Screenshot 2024-04-03 124029](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/9e06202f-860e-4ad9-bfcf-59d691a3eb52)
+
+
+## volla !! it works we did it !! 
+
+
+### We have successfully created GitOps pipeline where, if you make changes in code it will pick up the changes from github, adjust the pods/deployments. And if we have any changes in our application it will rollout slowly based on our rollouts weights called as canary version. 
+
+
+To check logs for error checking 
+
+~~~
+kubectl logs -n argo-rollouts deployment/argo-rollouts
+~~~
+
+
+### Task 4: Clean up and Documentation 
+
+__Delete Argocd__
+
+First disable sync otherwise if you delete pods it will pop up again and again.
+
+Then you can delete by selecting delete option in the interface and select cascade delete option to clean up background resouces.
+
+**or**
+
+You can use this command fo me Name was _website-argocd_
+
+~~~
+kubectl delete ApplicationSet <NAME> --cascade
+~~~
+
+This will delete deployed application make sure you perform this step it will save you from unwanted allocated resources.
+
+
+__Delete the Argo Rollout__ 
+
+To delete resources and serivces
+
+~~~
+kubectl delete rollout website-rollout
+~~~
+
+~~~
+kubectl delete service website
+~~~
+
+check pods and delete and left out pods 
+
+~~~
+kubectl delete pod <name>
+~~~
+
+And finally,
+
+~~~
+kubectl delete namespace argocd
+
+kubectl delete namespace argo-rollouts
+~~~
+
+To delete everything in that namespace(including that).
+
+
+
+## Chanllenges 
+
+**Mistakes that I made so that you don't have too!!**
+
+1) Deployment image with private ECR. 
+
+I created everything with private ECR as a habbit, then I read the tasks again and I shifted everything to Public ECR. 
+
+**Resolve it by making everything public**
+
+If you want to use Private ECR then include **secrets**
+
+~~~
+kubectl create secret docker-registry ecr-credentials \
+  --docker-server=<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com \
+  --docker-username=AWS \
+  --docker-password="$(aws ecr get-login-password --region <AWS_REGION>)" \
+  --namespace=<NAMESPACE>
+~~~
+
+updtae deployment file with 
+
+~~~
+spec:
+  imagePullSecrets:
+  - name: ecr-credentials
+  containers:
+  - name: your-container
+    image: <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/your-repository:your-tag
+~~~
+
+
+2) CLI Authentication problem with github.
+ 
+ I am still not sure what caused this error, i was not able to push files to my github but, **I resolved it by pushing code to my Gitlab repo then importing it to my github** 
+ 
+
+3) ECR image pushing with new tag.
+
+I got confused (sleepy head) in between names of repositry and image names. Nothing to worry about.
+
+
+4) Deployment changing image command
+ 
+Initially i was facing  **Error: rollouts.argoproj.io "rollout" not found.**
+
+I overlooked this part _"Argo Rollouts CRDs are not included into namespace-install.yaml. and have to be installed separately."_
+
+resolved it by: 
+
+~~~
+kubectl apply -k https://github.com/argoproj/argo-rollouts/manifests/crds\?ref\=stable
+~~~
+
+If you made it this far, you surely know alot more stuff!! **Congrats!!** 
+
+# Thank you for Reading !!
+
+
+
 
 
 
