@@ -48,7 +48,6 @@ kubectl get pods -A
 
 tag -A means in all namespaces
 ```
-Output:
 
 ~~~
 NAMESPACE     NAME                                       READY   STATUS    RESTARTS      AGE
@@ -87,6 +86,10 @@ argocd        argocd-redis-66d9777b78-smc4h                       1/1     Runnin
 argocd        argocd-repo-server-7b8d97c767-96rzh                 1/1     Running   0              52s
 argocd        argocd-server-5c797497fb-xklvq                      1/1     Running   0              51s
 ~~~
+
+![Screenshot 2024-04-02 152145](https://github.com/SomeshRao007/GitOps-Pipeline-with-Argo-CD-in-Kubernetes/assets/111784343/59723569-107d-4da7-8a28-70fa3b77e69f)
+
+If you are running a VMware Virtual machine then please wait it will take time as per allocated resources.
 If you see all these pods up and running then you are good to go. 
 
 Lets check services:
@@ -100,7 +103,6 @@ for a specific namespace use -n tag:
 ~~~
 kubectl get svc -n argocd
 ~~~
-Output:
 
 ~~~
 NAME                                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
@@ -114,13 +116,122 @@ argocd-server                             ClusterIP   10.100.12.23    <none>    
 argocd-server-metrics                     ClusterIP   10.97.68.20     <none>        8083/TCP                     2m7s
 ~~~
 
+Editing __argocd-server__ service from cluster ip to nodeport so can we can access it. Simply check for _type_ at the bottom of the document, which will be opened after running this command: 
+
+~~~
+kubectl edit svc argocd-server -n argocd
+
+service/argocd-server edited
+~~~
+
+now, after editing that we need to create a http and https tunnel for us to use.
+
+~~~
+minikube service argocd-server -n argocd
+~~~
+
+you will get a IP address something like 192.27..... its a private ip you can just copy paste that in your browser.
+
+Or as an alternative you can do port forwarding 
+
+```
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+
+To Feach username and password for Admin (as we are😅) follow the steps below:
+all confidentails data is stored in secret servers
+
+~~~
+kubectl get secret -n argocd
+~~~
+~~~
+NAME                          TYPE     DATA   AGE
+argocd-initial-admin-secret   Opaque   1      30m
+argocd-notifications-secret   Opaque   0      102m
+argocd-secret                 Opaque   5      102m
+~~~
+
+we will open the file as if we are going to edit it but we will copy the password, you can use describe command too but it wont work for our purpose since, it will hide all the passwords. 
+
+The password you copied is an encrypted password we will decrypt it with:
+
+~~~
+echo <password> | base64 --decode #to decode the password
+~~~
+
+Sign up into argocd by entering ipaddress given by minikube tunnel & you willsee a login page 
+__vollaaa!!__
+
+Lastly, installation of Argo Rollouts
+Again, we install the Argo Rollouts controller in your Kubernetes cluster, by following the official guide. but i will share the commands i used. 
+
+~~~
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+~~~
+this will work.
+
+And for kubectl plugins:
+basically we are downloading that scrip file __curl__, then making it executable file with __chmod +x__ and we are running that file with __./__ and moving the output to /usr/local/bin/kubectl-argo-rollouts location.
+
+~~~
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x ./kubectl-argo-rollouts-linux-amd64
+sudo mv ./kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+~~~
+
+installation is complete. 
 
 
+## Creating Docker Image 
 
-- Install Argo Rollouts: Install the Argo Rollouts controller in your Kubernetes cluster, following the official guide.
+For docker image, i am using my porfolio website so starting with cloning my git repo u can use you can use your own website: 
+
+~~~
+git clone https://github.com/SomeshRao007/SomeshRao007.github.io.git
+
+cd SomeshRao007.github.io.git
+~~~
+
+how to create a image for my website? basically we need to install all dependencies if node.js or anyother stack based then refer docker hub for that image and take a glance at commands. For me it was httpd, so i search at docker hub for httpd and found how to write docker commands follow: https://hub.docker.com/_/httpd#:~:text=Create%20a%20Dockerfile%20in%20your%20project
+
+Lets create a Dockerfile
+
+~~~
+vi Dockerfile 
+~~~
+
+write this in that file
+
+~~~
+FROM httpd:2.4
+COPY ./ /usr/local/apache2/htdocs/
+~~~
+
+FROM command takes the base image of http2.4 and then with COPY command, we are copying everthing in our local directory to server location. 
+to save esc wq
+
+__Next step building a image__ 
+
+```
+docker build -t <your image name> <your docker file location use . if you are in the same dir>
+```
+
+To check image
+
+~~~
+docker images
+~~~
+
+> Docker internally runs on a client/server architecture. In particular, when you run docker build, it creates a tar file of the directory you specify, sends that tar file across a socket to the Docker daemon, and unpacks it there. (True even on a totally local system.)
 
 
+docker run -itd -port 3000:80 --name website myweb
 
+# basically we are running docker in background (-itd tag) on port 3000 (container port : host port) and name of the container website from the image myweb.
+
+
+to check 127.0.0.1/3000 (or type localhost:3000) vollaa!!
 
 
 
