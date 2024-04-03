@@ -333,6 +333,7 @@ kubectl describe pod/website
 <details>
            <summary>Output of Describe</summary>
 <p>
+~~~
 Name:             website
 Namespace:        default
 Priority:         0
@@ -386,7 +387,7 @@ Events:
   Normal  Pulled     107s   kubelet            Successfully pulled image "public.ecr.aws/n8y8c3i1/argocdtest:latest" in 1m7.082979603s 
   Normal  Created    107s   kubelet            Created container website
   Normal  Started    107s   kubelet            Started container website
-
+~~~
 </p>
 </details>
            
